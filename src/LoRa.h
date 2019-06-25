@@ -4,8 +4,7 @@
 #ifndef LORA_H
 #define LORA_H
 
-#include <Arduino.h>
-#include <SPI.h>
+#include "xspips.h"
 
 #ifdef ARDUINO_SAMD_MKRWAN1300
 #define LORA_DEFAULT_SPI           SPI1
@@ -24,64 +23,64 @@
 #define PA_OUTPUT_RFO_PIN          0
 #define PA_OUTPUT_PA_BOOST_PIN     1
 
-class LoRaClass : public Stream {
+class LoRaClass {
 public:
   LoRaClass();
 
-  int begin(long frequency);
+  s32 begin(long frequency);
   void end();
 
-  int beginPacket(int implicitHeader = false);
-  int endPacket(bool async = false);
+  s32 beginPacket(s32 implicitHeader = false);
+  s32 endPacket(bool async = false);
 
-  int parsePacket(int size = 0);
-  int packetRssi();
+  s32 parsePacket(s32 size = 0);
+  s32 packetRssi();
   float packetSnr();
   long packetFrequencyError();
 
   // from Print
-  virtual size_t write(uint8_t byte);
-  virtual size_t write(const uint8_t *buffer, size_t size);
+  virtual size_t write(u8 byte);
+  virtual size_t write(const u8 *buffer, size_t size);
 
   // from Stream
-  virtual int available();
-  virtual int read();
-  virtual int peek();
+  virtual s32 available();
+  virtual s32 read();
+  virtual s32 peek();
   virtual void flush();
 
 #ifndef ARDUINO_SAMD_MKRWAN1300
-  void onReceive(void(*callback)(int));
+  void onReceive(void(*callback)(s32));
 
-  void receive(int size = 0);
+  void receive(s32 size = 0);
 #endif
   void idle();
   void sleep();
 
-  void setTxPower(int level, int outputPin = PA_OUTPUT_PA_BOOST_PIN);
+  void setTxPower(s32 level, s32 outputPin = PA_OUTPUT_PA_BOOST_PIN);
   void setFrequency(long frequency);
-  void setSpreadingFactor(int sf);
+  void setSpreadingFactor(s32 sf);
   void setSignalBandwidth(long sbw);
-  void setCodingRate4(int denominator);
+  void setCodingRate4(s32 denominator);
   void setPreambleLength(long length);
-  void setSyncWord(int sw);
+  void setSyncWord(s32 sw);
   void enableCrc();
   void disableCrc();
   void enableInvertIQ();
   void disableInvertIQ();
   
-  void setOCP(uint8_t mA); // Over Current Protection control
+  void setOCP(u8 mA); // Over Current Protection control
 
   // deprecated
   void crc() { enableCrc(); }
   void noCrc() { disableCrc(); }
 
-  byte random();
+  s8 random();
 
-  void setPins(int ss = LORA_DEFAULT_SS_PIN, int reset = LORA_DEFAULT_RESET_PIN, int dio0 = LORA_DEFAULT_DIO0_PIN);
-  void setSPI(SPIClass& spi);
+  void setPins(s32 ss = LORA_DEFAULT_SS_PIN, s32 reset = LORA_DEFAULT_RESET_PIN, s32 dio0 = LORA_DEFAULT_DIO0_PIN);
+  void setSPI(XSpiPs& spi);
   void setSPIFrequency(uint32_t frequency);
 
-  void dumpRegisters(Stream& out);
+//  void dumpRegisters(Stream& out);
 
 private:
   void explicitHeaderMode();
@@ -90,27 +89,27 @@ private:
   void handleDio0Rise();
   bool isTransmitting();
 
-  int getSpreadingFactor();
+  s32 getSpreadingFactor();
   long getSignalBandwidth();
 
   void setLdoFlag();
 
-  uint8_t readRegister(uint8_t address);
-  void writeRegister(uint8_t address, uint8_t value);
-  uint8_t singleTransfer(uint8_t address, uint8_t value);
+  u8 readRegister(u8 address);
+  void writeRegister(u8 address, u8 value);
+  u8 singleTransfer(u8 address, u8 value);
 
   static void onDio0Rise();
 
 private:
-  SPISettings _spiSettings;
-  SPIClass* _spi;
-  int _ss;
-  int _reset;
-  int _dio0;
+  XSpiPs_Config _spiSettings;
+  XSpiPs* _spi;
+  s32 _ss;
+  s32 _reset;
+  s32 _dio0;
   long _frequency;
-  int _packetIndex;
-  int _implicitHeaderMode;
-  void (*_onReceive)(int);
+  s32 _packetIndex;
+  s32 _implicitHeaderMode;
+  void (*_onReceive)(s32);
 };
 
 extern LoRaClass LoRa;
